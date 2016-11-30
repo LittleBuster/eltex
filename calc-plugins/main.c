@@ -88,6 +88,7 @@ struct plugins_list *load_plugins(const char *path)
     			continue;
     		}
 
+    		plist = plugins_list_append(plist, plugin);
     		printf("Plugin %s loaded succesfully.\n", f_cur->d_name);
     	}
     }
@@ -108,7 +109,11 @@ int main(void)
 		exit(-1);
 
 	for (;;) {
-		size_t i = 0;
+		unsigned i = 0;	
+		unsigned menu;
+		int ret_val;
+		int a = 0;
+		int b = 0;
 
 		puts("==========================");
 		puts("     CALCULATOR MENU");
@@ -116,10 +121,44 @@ int main(void)
 		
 		for (struct plugins_list *l = plist; l != NULL; l = plugins_list_next(l)) {
 			struct plugin *plugin = plugins_list_get_plugin(l);
-			printf("[%lu] %s\n", i, plugin->description);
+			printf("[%u] %s\n", i, plugin->description);
 			i++;
+		}		
+		printf("[-1] Exit.\n %s", ">");
+
+		ret_val = scanf("%u", &menu);
+		if (ret_val == 0) {
+			puts("Wrong menu number.");
+			continue;
 		}
+
+		// Exit program
+		if (menu == -1)
+			break;
+
+		puts("\nPlease, enter nums:");
+		printf("a=");
+		ret_val = scanf("%d", &a);
+		if (ret_val == 0) {
+			puts("Wrong integer value.");
+			continue;
+		}
+
+		printf("b=");
+		ret_val = scanf("%d", &b);
+		if (ret_val == 0) {
+			puts("Wrong integer value.");
+			continue;
+		}
+
+		printf("A= %d B=%d", a, b);
 	}
 
+	// Free all
+	for (struct plugins_list *l = plist; l != NULL; l = plugins_list_next(l)) {
+		struct plugin *plugin = plugins_list_get_plugin(l);
+		dlclose(plugin->lib_id);
+	}
+	plugins_list_free_all(plist);
 	return 0;
 }
