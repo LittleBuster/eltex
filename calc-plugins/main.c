@@ -108,6 +108,7 @@ int main(void)
 		exit(-1);
 
 	for (;;) {
+		bool is_found = false;
 		unsigned i = 0;	
 		unsigned menu;
 		int ret_val;
@@ -151,7 +152,18 @@ int main(void)
 			continue;
 		}
 
-		printf("A= %d B=%d", a, b);
+		i = 0;
+		for (struct plugins_list *l = plist; l != NULL; l = plugins_list_next(l)) {
+			if (menu == i) {
+				is_found = true;
+				struct plugin *plugin = plugins_list_get_plugin(l);
+				printf("Result: %d\n", plugin->func(a, b));
+				break;
+			}
+			i++;
+		}
+		if (!is_found)
+			puts("Wring menu number!");
 	}
 
 	// Free all
@@ -160,5 +172,6 @@ int main(void)
 		dlclose(plugin->lib_id);
 	}
 	plugins_list_free_all(plist);
+	puts("Goodbye.");
 	return 0;
 }
