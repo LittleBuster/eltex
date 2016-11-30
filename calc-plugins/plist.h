@@ -15,6 +15,7 @@
 
 
 struct plugin {
+	void *lib_id;
 	char description[255];
 	int (*func)(int, int);
 };

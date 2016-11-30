@@ -38,7 +38,7 @@ struct plugins_list *plugins_list_append(struct plugins_list *plist, struct plug
     return new_list;
 }
 
-struct plugin *plugins_list_get_meteo(struct plugins_list *plist)
+struct plugin *plugins_list_get_plugin(struct plugins_list *plist)
 {
     return plist->plugin;
 }
