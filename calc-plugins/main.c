@@ -62,12 +62,17 @@ struct plugins_list *load_plugins(const char *path)
 
     		struct plugin *plugin = (struct plugin *)malloc(sizeof(struct plugin));
     		plugin->lib_id = dlopen(full_path, RTLD_NOW);
+    		if (plugin->lib_id == NULL) {
+    			printf("Fail loading %s plugin!\n", f_cur->d_name);
+    			free(plugin);
+    			continue;
+    		}
 
     		*(void **)(&get_lib_info) = dlsym(plugin->lib_id, "get_lib_info");
     		if (get_lib_info == NULL) {
     			dlclose(plugin->lib_id);
     			free(plugin);
-    			printf("Fail loading get_lib_info function.");
+    			puts("Fail loading get_lib_info function.");
     			continue;
     		}
 
@@ -76,13 +81,7 @@ struct plugins_list *load_plugins(const char *path)
 
     		*(void **)(&plugin->func) = dlsym(plugin->lib_id, info->func_name);
     		if (get_lib_info == NULL) {
-    			char msg[255];
-
-    			strcpy(msg, "Fail loading ");
-    			strcat(msg, info->func_name);
-    			strcat(msg, " function.");
-    			puts(msg);
-
+    			printf("Fail loading %s function.\n", info->func_name);
     			dlclose(plugin->lib_id);
     			free(plugin);
     			continue;
@@ -119,6 +118,7 @@ int main(void)
 		puts("     CALCULATOR MENU");
 		puts("==========================");
 		
+		// Printing exists plugins
 		for (struct plugins_list *l = plist; l != NULL; l = plugins_list_next(l)) {
 			struct plugin *plugin = plugins_list_get_plugin(l);
 			printf("[%u] %s\n", i, plugin->description);
