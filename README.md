@@ -12,7 +12,7 @@ Education home tasks
 ./build.sh clean
 ````
 <br>
-<img src="http://s16.radikal.ru/i191/1612/01/5dd07fffbd59.png" />
+<img width=450 src="http://s16.radikal.ru/i191/1612/01/5dd07fffbd59.png" />
 <br>
 <br>
 Developed by: <b>Sergey Denisov</b>

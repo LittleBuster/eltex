@@ -135,7 +135,7 @@ int main(void)
 			printf("[%u] %s\n", i, plugin->description);
 			i++;
 		}		
-		printf("[-1] Exit.\n %s", ">");
+		printf("[-1] Exit.\n%s", ">");
 
 		ret_val = scanf("%u", &menu);
 		if (ret_val == 0) {
