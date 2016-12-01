@@ -8,8 +8,8 @@
 // as published by the Free Software Foundation; either version 3
 // of the Licence, or (at your option) any later version.
 
-#ifndef ADD_LIB_H_
-#define ADD_LIB_H_
+#ifndef MUL_LIB_H_
+#define MUL_LIB_H_
 
 struct lib_info {
 	char description[255];

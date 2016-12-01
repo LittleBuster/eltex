@@ -90,7 +90,7 @@ struct plugins_list *load_plugins(const char *path)
     		strncpy(plugin->description, info->description, 255);
 
     		*(void **)(&plugin->func) = dlsym(plugin->lib_id, info->func_name);
-    		if (get_lib_info == NULL) {
+    		if (plugin->func == NULL) {
     			printf("Fail loading %s function.\n", info->func_name);
     			dlclose(plugin->lib_id);
     			free(plugin);
@@ -173,7 +173,7 @@ int main(void)
 			i++;
 		}
 		if (!is_found)
-			puts("Wring menu number!");
+			puts("Wrong menu number!");
 	}
 
 	// Free all
