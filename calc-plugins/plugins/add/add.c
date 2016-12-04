@@ -10,6 +10,7 @@
 
 #include "add.h"
 
+
 static struct lib_info info = {
 	.description = "Addition of numbers.",
 	.func_name = "add"

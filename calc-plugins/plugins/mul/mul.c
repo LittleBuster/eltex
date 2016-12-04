@@ -10,6 +10,7 @@
 
 #include "mul.h"
 
+
 static struct lib_info info = {
 	.description = "Multiplication of numbers.",
 	.func_name = "mul"

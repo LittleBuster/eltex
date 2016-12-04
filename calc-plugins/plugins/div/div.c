@@ -10,8 +10,9 @@
 
 #include "div.h"
 
+
 static struct lib_info info = {
-	.description = "Division numbers",
+	.description = "Division of numbers.",
 	.func_name = "div"
 };
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ $@ == "" ]]; then
-    echo "[ERROR] Please type: 'all' or 'clean'"
+    echo "[ERROR] Please type: 'all' or 'clean' or 'test'"
     exit 1
 fi
 
@@ -31,5 +31,32 @@ do
     	make clean
     	cd ../div
     	make clean
+    fi
+
+    if [[ $param == "test" ]]; then
+        cd plugins
+        cd add
+        cd test
+        make
+        ./test-add
+        make clean
+
+        cd ../../mul
+        cd test
+        make
+        ./test-mul
+        make clean
+
+        cd ../../div
+        cd test
+        make
+        ./test-div
+        make clean
+
+        cd ../../sub
+        cd test
+        make
+        ./test-sub
+        make clean
     fi
 done

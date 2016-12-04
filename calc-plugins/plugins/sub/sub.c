@@ -11,7 +11,7 @@
 #include "sub.h"
 
 static struct lib_info info = {
-	.description = "Subtraction of numbers",
+	.description = "Substraction of numbers.",
 	.func_name = "sub"
 };
 
