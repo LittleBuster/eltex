@@ -1,6 +1,6 @@
-// Calculator with plugins
+// File Manager
 //
-// Copyright (C) 2016 Sergey Denisov.
+// Copyright (C) 2017 Sergey Denisov.
 // Written by Sergey Denisov aka LittleBuster (DenisovS21@gmail.com)
 //
 // This library is free software; you can redistribute it and/or

@@ -1,19 +1,26 @@
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+// File Manager
+//
+// Copyright (C) 2017 Sergey Denisov.
+// Written by Sergey Denisov aka LittleBuster (DenisovS21@gmail.com)
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public Licence 3
+// as published by the Free Software Foundation; either version 3
+// of the Licence, or (at your option) any later version.
+
+#include <stdio.h>
 
 #include <curses.h>
+
 #include "files.h"
 
-enum Panel {
-	LEFT_PANEL,
-	RIGHT_PANEL
-};
+
+WINDOW *mainwnd = NULL;
+WINDOW *btnwnd = NULL;
+WINDOW *leftwnd = NULL;
+WINDOW *rightwnd = NULL;
+WINDOW *pwnd = NULL;
+WINDOW *pwnd2 = NULL;
 
 
 int main(void)
@@ -22,10 +29,6 @@ int main(void)
 	unsigned cur_panel = LEFT_PANEL;
 	unsigned cur_left = 0;
 	unsigned cur_right = 0;
-	WINDOW *mainwnd;
-	WINDOW *btnwnd;
-	WINDOW *leftwnd;
-	WINDOW *rightwnd;
 
 	initscr();
     cbreak();
@@ -33,29 +36,45 @@ int main(void)
     keypad(stdscr, TRUE);
 
     //Init windows
-    mainwnd = newwin(16, 79, 0, 0);
+    mainwnd = newwin(20, 79, 0, 0);
 	wrefresh(mainwnd);
 
-	btnwnd = newwin(3, 79, 16, 0);
-	box(btnwnd, 0, 0);
-	wrefresh(btnwnd);
-
-	mvwprintw(btnwnd, 1, 1, "[F2] Open [F2] Save [F12] Exit");
-	wrefresh(btnwnd);
-
 	//Working panels
-	leftwnd = derwin(mainwnd, 16, 39, 0, 0);
+	leftwnd = derwin(mainwnd, 16, 39, 3, 0);
 	box(leftwnd, 0, 0);
 	wrefresh(leftwnd);
 
-	rightwnd = derwin(mainwnd, 16, 39, 0, 40);
+	rightwnd = derwin(mainwnd, 16, 39, 3, 40);
 	box(rightwnd, 0, 0);
 	wrefresh(rightwnd);
+
+	//Paths
+	pwnd = derwin(mainwnd, 3, 39, 0, 0);
+	box(pwnd, 0, 0);
+	wrefresh(pwnd);
+
+	pwnd2 = derwin(mainwnd, 3, 39, 0, 40);
+	box(pwnd2, 0, 0);
+	wrefresh(pwnd2);
+
+	//Btn
+	btnwnd = newwin(3, 79, 19, 0);
+	box(btnwnd, 0, 0);
+	wrefresh(btnwnd);
+
+	mvwprintw(btnwnd, 1, 1, "[F4] Edit [F12] Exit");
+	wrefresh(btnwnd);
 
 	// Reading default dirs
 	SetFilesWindows(leftwnd, rightwnd);
 	LeftFilesReadDir("/home/serg/");
 	RightFilesReadDir("/");
+
+	mvwprintw(pwnd, 1, 1, "Path: /home/serg/");
+	mvwprintw(pwnd2, 1, 1, "Path: /");
+	wrefresh(pwnd);
+	wrefresh(pwnd2);
+
 	LeftFilesShow();
 	RightFilesShow();
 
@@ -64,10 +83,21 @@ int main(void)
 
 		switch(sym) {
 			case '\t': {
-				if (cur_panel == LEFT_PANEL)
+				if (cur_panel == LEFT_PANEL) {
 					cur_panel = RIGHT_PANEL;
-				else
+				}
+				else {
 					cur_panel = LEFT_PANEL;
+				}
+				SetCurPanel(cur_panel);
+				LeftFilesShow();
+				RightFilesShow();
+				break;
+			}
+
+			//F12
+			case 52: {
+				goto EXIT;
 				break;
 			}
 
@@ -110,9 +140,13 @@ int main(void)
 			}
 		}		
 	}
+
+EXIT:
 	delwin(mainwnd);
 	delwin(leftwnd);
 	delwin(rightwnd);
+	delwin(pwnd);
+	delwin(pwnd2);
 	delwin(btnwnd);
 	endwin();
 		
