@@ -75,7 +75,7 @@ static struct FileList *GetFiles(const char *path)
     return file_list;
 }
 
-char *GetCurPath(unsigned panel)
+const char *GetCurPath(unsigned panel)
 {
 	if (panel == LEFT_PANEL)
 		return left.cur_path;
@@ -224,6 +224,9 @@ bool RightChangeExec()
 
 					return false;
 				}
+			} else {
+				//chdir(right.cur_path);
+				AppExec(file->name);
 			}
 			break;
 		}
@@ -250,20 +253,62 @@ bool LeftChangeExec()
 					strcpy(left.cur_path, path);
 					strcat(left.cur_path, "/");
 					left.files = GetFiles(left.cur_path);
-
 					return true;
 				} else {
 					strcat(left.cur_path, file->name);
 					strcat(left.cur_path, "/");
 					chdir(left.cur_path);
 					left.files = GetFiles(left.cur_path);
-
 					return false;
 				}
+			} else {
+			//	chdir(left.cur_path);
+				AppExec(file->name);
 			}
 			break;
 		}
 		count++;
 	}
 	return false;
+}
+
+void AppExec(const char *filename)
+{
+	char *ext;
+	char file[255];
+	char cmd[255];
+
+	strcpy(file, filename);
+	strtok(file, ".");
+	ext = strtok(NULL, ".");
+
+	if (ext == NULL) {
+		sprintf(cmd, "./%s", filename);
+		system(cmd);
+		return;
+	}
+	if (ext[0] == 'p' && ext[1] == 'n' && ext[2] == 'g') {
+		sprintf(cmd, "shotwell %s", filename);
+		system(cmd);
+	}
+	if (ext[0] == 'j' && ext[1] == 'p' && ext[2] == 'g') {
+		sprintf(cmd, "shotwell %s", filename);
+		system(cmd);
+	}
+	if (ext[0] == 'j' && ext[1] == 'p' && ext[2] == 'e' && ext[3] == 'g') {
+		sprintf(cmd, "shotwell %s", filename);
+		system(cmd);
+	}
+	if (ext[0] == 't' && ext[1] == 'x' && ext[2] == 't') {
+		sprintf(cmd, "gedit %s", filename);
+		system(cmd);
+	}
+	if (ext[0] == 'c' && ext[1] == 'f' && ext[2] == 'g') {
+		sprintf(cmd, "gedit %s", filename);
+		system(cmd);
+	}
+	if (ext[0] == 'l' && ext[1] == 'o' && ext[2] == 'g') {
+		sprintf(cmd, "gedit %s", filename);
+		system(cmd);
+	}
 }

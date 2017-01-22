@@ -32,7 +32,7 @@ struct Panel {
 };
 
 
-char *GetCurPath(unsigned panel);
+const char *GetCurPath(unsigned panel);
 
 unsigned GetMax(unsigned panel);
 
@@ -55,6 +55,8 @@ void RightFilesShow();
 bool LeftChangeExec();
 
 bool RightChangeExec();
+
+void AppExec(const char *filename);
 
 
 #endif
