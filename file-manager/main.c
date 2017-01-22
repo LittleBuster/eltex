@@ -9,6 +9,7 @@
 // of the Licence, or (at your option) any later version.
 
 #include <stdio.h>
+#include <unistd.h>
 
 #include <curses.h>
 
@@ -67,11 +68,12 @@ int main(void)
 
 	// Reading default dirs
 	SetFilesWindows(leftwnd, rightwnd);
-	LeftFilesReadDir("/home/serg/");
-	RightFilesReadDir("/");
+	LeftFilesReadDir("/home/");
+	RightFilesReadDir("/home/");
+	chdir("/home/");
 
-	mvwprintw(pwnd, 1, 1, "Path: /home/serg/");
-	mvwprintw(pwnd2, 1, 1, "Path: /");
+	mvwprintw(pwnd, 1, 1, "/home/");
+	mvwprintw(pwnd2, 1, 1, "/home/");
 	wrefresh(pwnd);
 	wrefresh(pwnd2);
 
@@ -92,6 +94,32 @@ int main(void)
 				SetCurPanel(cur_panel);
 				LeftFilesShow();
 				RightFilesShow();
+				break;
+			}
+
+			//Enter
+			case 10 : {
+				if (cur_panel == LEFT_PANEL) {
+					cur_left = 0;
+					LeftChangeExec();
+					LeftSetCurrent(0);
+					LeftFilesShow();
+
+					wclear(pwnd);
+					box(pwnd, 0, 0);
+					mvwprintw(pwnd, 1, 1, GetCurPath(LEFT_PANEL));
+					wrefresh(pwnd);
+				} else {
+					cur_right = 0;
+					RightChangeExec();
+					RightSetCurrent(0);
+					RightFilesShow();
+
+					wclear(pwnd2);
+					box(pwnd2, 0, 0);
+					mvwprintw(pwnd2, 1, 1, GetCurPath(RIGHT_PANEL));
+					wrefresh(pwnd2);
+				}				
 				break;
 			}
 
@@ -123,14 +151,18 @@ int main(void)
 			//DOWN
 			case 66: {
 				if (cur_panel == LEFT_PANEL) {
-					if (cur_left < MAX_FILES-2) {
+					unsigned max = GetMax(LEFT_PANEL)-1;
+
+					if (cur_left < max && cur_left < (MAX_FILES-2)) {
 						cur_left++;
 						LeftSetCurrent(cur_left);
 						LeftFilesShow();
 					}
 				}
 				if (cur_panel == RIGHT_PANEL) {
-					if (cur_right < MAX_FILES-2) {
+					unsigned max = GetMax(RIGHT_PANEL);
+
+					if (cur_right < max && cur_right < (MAX_FILES-2)) {
 						cur_right++;
 						RightSetCurrent(cur_right);
 						RightFilesShow();

@@ -12,6 +12,7 @@
 #define FILES_H_
 
 #include <curses.h>
+#include <stdbool.h>
 
 #include "filelist.h"
 
@@ -31,6 +32,10 @@ struct Panel {
 };
 
 
+char *GetCurPath(unsigned panel);
+
+unsigned GetMax(unsigned panel);
+
 void SetCurPanel(unsigned panel);
 
 void SetFilesWindows(WINDOW *left_wnd, WINDOW *right_wnd);
@@ -46,6 +51,10 @@ void RightSetCurrent(unsigned num);
 void RightFilesReadDir(const char *path);
 
 void RightFilesShow();
+
+bool LeftChangeExec();
+
+bool RightChangeExec();
 
 
 #endif

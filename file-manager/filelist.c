@@ -63,3 +63,14 @@ void FileListFree(struct FileList *file_list)
         free(tmp);
     }
 }
+
+unsigned FileListCount(struct FileList *file_list)
+{
+    unsigned count = 0;
+
+    while (file_list) {
+        count++;
+        file_list = file_list->next;
+    }
+    return count;
+}

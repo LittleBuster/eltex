@@ -33,6 +33,7 @@ static struct Panel right = {
 	.cur_file = 0,
 };
 
+
 unsigned cur_panel = LEFT_PANEL;
 
 
@@ -58,6 +59,11 @@ static struct FileList *GetFiles(const char *path)
     	file = (struct File *)malloc(sizeof(file));
     	strcpy(file->name, f_cur->d_name);
 
+    	if (f_cur->d_type == DT_DIR)
+    		file->type = TYPE_DIR;
+    	else
+    		file->type = TYPE_FILE;
+
     	fd = open(f_cur->d_name, O_RDONLY, 0);
     	fstat(fd, &st);
     	file->size = st.st_size;
@@ -67,6 +73,22 @@ static struct FileList *GetFiles(const char *path)
     }
     closedir(dir);
     return file_list;
+}
+
+char *GetCurPath(unsigned panel)
+{
+	if (panel == LEFT_PANEL)
+		return left.cur_path;
+	else
+		return right.cur_path;
+}
+
+unsigned GetMax(unsigned panel)
+{
+	if (panel == LEFT_PANEL)
+		return FileListCount(left.files);
+	else
+		return FileListCount(right.files);
 }
 
 void SetCurPanel(unsigned panel)
@@ -102,11 +124,16 @@ void LeftFilesShow()
 		struct File *file = FileListGet(files);
 
 		if ((count-1) == left.cur_file && cur_panel == LEFT_PANEL) {
-			sprintf(out, "[%s (%lu B)]", file->name, file->size);
+			if (file->type == TYPE_DIR)
+				sprintf(out, "[%s (%lu B) (DIR)]", file->name, file->size);
+			else
+				sprintf(out, "[%s (%lu B) (FILE)]", file->name, file->size);
 			mvwprintw(left.wnd, count, 2, out);
-
 		} else {
-			sprintf(out, "%s (%lu B)", file->name, file->size);
+			if (file->type == TYPE_DIR)
+				sprintf(out, "%s (%lu B) (DIR)", file->name, file->size);
+			else
+				sprintf(out, "%s (%lu B) (FILE)", file->name, file->size);
 			mvwprintw(left.wnd, count, 2, out);
 		}
 		count++;
@@ -144,11 +171,16 @@ void RightFilesShow()
 		struct File *file = FileListGet(files);
 
 		if ((count-1) == right.cur_file && cur_panel == RIGHT_PANEL) {
-			sprintf(out, "[%s (%lu B)]", file->name, file->size);
+			if (file->type == TYPE_DIR)
+				sprintf(out, "[%s (%lu B) (DIR)]", file->name, file->size);
+			else
+				sprintf(out, "[%s (%lu B) (FILE)]", file->name, file->size);
 			mvwprintw(right.wnd, count, 2, out);
-
 		} else {
-			sprintf(out, "%s (%lu B)", file->name, file->size);
+			if (file->type == TYPE_DIR)
+				sprintf(out, "%s (%lu B) (DIR)", file->name, file->size);
+			else
+				sprintf(out, "%s (%lu B) (FILE)", file->name, file->size);
 			mvwprintw(right.wnd, count, 2, out);
 		}
 		count++;
@@ -162,4 +194,76 @@ void RightFilesShow()
 void RightSetCurrent(unsigned num)
 {
 	right.cur_file = num;
+}
+
+bool RightChangeExec()
+{
+	struct FileList *files = NULL;
+	unsigned count = 1;
+
+	for (files = right.files; files != NULL; files = FileListNext(files)) {
+		struct File *file = FileListGet(files);
+
+		if ((count-1) == right.cur_file) {
+			if (file->type == TYPE_DIR) {
+				char path[255];
+
+				if (!strcmp(file->name, "..")) {
+					chdir("..");
+					getcwd(path, 255);
+					strcpy(right.cur_path, path);
+					strcat(right.cur_path, "/");
+					right.files = GetFiles(right.cur_path);
+
+					return true;
+				} else {
+					strcat(right.cur_path, file->name);
+					strcat(right.cur_path, "/");
+					chdir(right.cur_path);
+					right.files = GetFiles(right.cur_path);
+
+					return false;
+				}
+			}
+			break;
+		}
+		count++;
+	}
+	return false;
+}
+
+bool LeftChangeExec()
+{
+	struct FileList *files = NULL;
+	unsigned count = 1;
+
+	for (files = left.files; files != NULL; files = FileListNext(files)) {
+		struct File *file = FileListGet(files);
+
+		if ((count-1) == left.cur_file) {
+			if (file->type == TYPE_DIR) {
+				char path[255];
+
+				if (!strcmp(file->name, "..")) {
+					chdir("..");
+					getcwd(path, 255);
+					strcpy(left.cur_path, path);
+					strcat(left.cur_path, "/");
+					left.files = GetFiles(left.cur_path);
+
+					return true;
+				} else {
+					strcat(left.cur_path, file->name);
+					strcat(left.cur_path, "/");
+					chdir(left.cur_path);
+					left.files = GetFiles(left.cur_path);
+
+					return false;
+				}
+			}
+			break;
+		}
+		count++;
+	}
+	return false;
 }

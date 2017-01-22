@@ -14,8 +14,14 @@
 #include <stdio.h>
 
 
+enum {
+	TYPE_DIR,
+	TYPE_FILE
+};
+
 struct File {
 	unsigned long size;
+	unsigned type;
 	char name[100];
 };
 
@@ -32,6 +38,8 @@ struct FileList *FileListNext(struct FileList *file_list);
 struct File *FileListGet(struct FileList *file_list);
 
 void FileListFree(struct FileList *file_list);
+
+unsigned FileListCount(struct FileList *file_list);
 
 
 #endif
