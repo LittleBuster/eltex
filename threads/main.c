@@ -20,7 +20,9 @@
 static struct {
 	unsigned storage[5];
 	unsigned clients[3];
-	pthread_mutex_t mtx;
+	pthread_mutex_t mtx_out;
+	pthread_mutex_t mtx_cl;
+	pthread_mutex_t mtx_st;
 } stock;
 
 
@@ -30,24 +32,33 @@ void* StartLoader()
 		struct timeval tv = {2, 0};
 		unsigned number = rand()%5;
 		unsigned i;
+		unsigned count;
 		bool f = false;
 
-		pthread_mutex_lock(&stock.mtx);
 		for (i = 0; i < 3; i++) {
-			if (stock.clients[i] < 1500) {
+			pthread_mutex_lock(&stock.mtx_cl);
+			count = stock.clients[i];
+			pthread_mutex_unlock(&stock.mtx_cl);
+
+			if (count < 1500) {
 				f = true;
 				break;
 			}
 		}
 		if (!f) {
+			pthread_mutex_lock(&stock.mtx_out);
 			printf("Все клиенты набрали 1500. Завершение работы.\n");
-			pthread_mutex_unlock(&stock.mtx);
+			pthread_mutex_unlock(&stock.mtx_out);
 			exit(0);
 		}
 
+		pthread_mutex_lock(&stock.mtx_st);
 		stock.storage[number] += 100;
+		pthread_mutex_unlock(&stock.mtx_st);
+
+		pthread_mutex_lock(&stock.mtx_out);
 		printf("Поргрузчик полжил 100 в ячейку %u\n", number);
-		pthread_mutex_unlock(&stock.mtx);
+		pthread_mutex_unlock(&stock.mtx_out);
 		
 		//Waiting 2 seconds
 		if (select(0, NULL, NULL, NULL, &tv) == -1)
@@ -64,28 +75,46 @@ void* StartClient(void *data)
 	for (;;) {
 		struct timeval tv = {1, 0};
 		unsigned num = rand()%5;
+		unsigned count;
 
 		//Waiting 1 second
 		if (select(0, NULL, NULL, NULL, &tv) == -1)
 			if (EINTR == errno)
 				continue;
 
-		pthread_mutex_lock(&stock.mtx);
-		if (stock.storage[num] < 300) {
+		pthread_mutex_lock(&stock.mtx_st);
+		count = stock.storage[num];
+		pthread_mutex_unlock(&stock.mtx_st);
+
+		if (count < 300) {
+			pthread_mutex_lock(&stock.mtx_out);
 			printf("В ячейке %u не хватает предметов.\n", *client);
-			pthread_mutex_unlock(&stock.mtx);
+			pthread_mutex_unlock(&stock.mtx_out);
 			continue;
 		}
-		stock.storage[num] -= 300;
-		stock.clients[*client] += 300;
-		printf("Клиент %u забрал 300 из ячейки %u\n", *client, num);
 
-		if (stock.clients[*client] >= 1500) {
+		pthread_mutex_lock(&stock.mtx_st);
+		stock.storage[num] -= 300;
+		pthread_mutex_unlock(&stock.mtx_st);
+
+		pthread_mutex_lock(&stock.mtx_cl);
+		stock.clients[*client] += 300;
+		pthread_mutex_unlock(&stock.mtx_cl);
+
+		pthread_mutex_lock(&stock.mtx_out);
+		printf("Клиент %u забрал 300 из ячейки %u\n", *client, num);
+		pthread_mutex_unlock(&stock.mtx_out);
+
+		pthread_mutex_lock(&stock.mtx_cl);
+		count = stock.clients[*client];
+		pthread_mutex_unlock(&stock.mtx_cl);
+
+		if (count >= 1500) {
+			pthread_mutex_lock(&stock.mtx_out);
 			printf("Клиент %u набрал 1500 и завершил работу.\n", *client);
-			pthread_mutex_unlock(&stock.mtx);
+			pthread_mutex_unlock(&stock.mtx_out);
 			break;
 		}
-		pthread_mutex_unlock(&stock.mtx);
 	}
 	return NULL;
 }
