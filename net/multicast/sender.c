@@ -1,59 +1,63 @@
+// Multicast UDP sender
+//
+// Copyright (C) 2017 Sergey Denisov.
+// Written by Sergey Denisov aka LittleBuster (DenisovS21@gmail.com)
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public Licence 3
+// as published by the Free Software Foundation; either version 3
+// of the Licence, or (at your option) any later version.
+
+
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <string.h>
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
- 
 
-int main(int argc, char **argv)
+
+int CreateUdpSocket(const char *ip, unsigned port, struct sockaddr_in *srvaddr)
 {
-    int sockfd;
-    int n, len;
-    char sendline[1000];
-    struct sockaddr_in servaddr, cliaddr;
+    int fd;
 
-    if((sockfd = socket(PF_INET, SOCK_DGRAM, 0)) < 0)
-    {
-        puts("Socket error");
-        exit(1);
+    if((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        puts("Socket creation error");
+        return -1;
     }
 
-    bzero(&cliaddr, sizeof(cliaddr));
-    cliaddr.sin_family = AF_INET;
-    cliaddr.sin_port = htons(0);
-    cliaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    bzero(srvaddr, sizeof(struct sockaddr_in));
+    srvaddr->sin_family = AF_INET;
+    srvaddr->sin_port = htons(port);
  
-    if(bind(sockfd, (struct sockaddr *)&cliaddr, sizeof(cliaddr)) < 0)
-    {
-        perror(NULL);
-        close(sockfd);
-        exit(1);
+    if(inet_aton(ip, &srvaddr->sin_addr) == 0) {
+        puts("Invalid IP address");
+        close(fd);
+        return -1;
     }
+    return fd;
+}
 
-    bzero(&servaddr, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(5002);
- 
-    if(inet_aton("224.0.1.1", &servaddr.sin_addr) == 0)
-    {
-        printf("Invalid IP address\n");
-        close(sockfd);
-        exit(1);
-    }
- 
-    strcpy(sendline, "Hello world");
+int main(void)
+{
+    int fd;
+    char text[12];
+    struct sockaddr_in srvaddr;
 
-    if(sendto(sockfd, sendline, strlen(sendline) + 1, 0, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0)
-    {
-        perror(NULL);
-        close(sockfd);
-        exit(1);
+    fd = CreateUdpSocket("224.0.1.1", 5001, &srvaddr);
+    if (fd == -1)
+        return -1;
+    strncpy(text, "Hello world", 11);
+
+    if(sendto(fd, text, strlen(text)+1, 0, (struct sockaddr *)&srvaddr, sizeof(srvaddr)) < 0) {
+        puts("Fail sending multicast data.");
+        close(fd);
+        return -1;
     }
-    close(sockfd);
- 
+    puts("Multicast data sended.");
+    close(fd);
     return 0;
 }
