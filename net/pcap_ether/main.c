@@ -8,8 +8,6 @@
 // as published by the Free Software Foundation; either version 3
 // of the Licence, or (at your option) any later version.
 
-
-#include <pcap.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,61 +20,35 @@
 #include <netinet/tcp.h>
 #include <netinet/ip.h>
 
+#include <pcap.h>
+
+#include "headers.h"
+#include "print.h"
+
 
 pcap_t *handle;
 
-struct Packet {
-    unsigned char dest[6];
-    unsigned char src[6];
-    unsigned short type;
-} __attribute__((packed));
-
-
-static void ShowMac(const char *text, const unsigned char *mac)
-{
-    printf("%s", text);
-    for (unsigned char i = 0; i < 7; i++) {
-        printf("%02X", mac[i]);
-        if (i != 6)
-            printf(":");
-    }
-    printf("\n");
-}
-
-void ShowPayload(const unsigned char *data, unsigned size)
-{
-    unsigned sz = size - sizeof(struct Packet);
-
-    printf("Payload:\n");
-    for (unsigned i = 0; i < sz; i++) {
-        printf("%02X ", data[i]);
-    }
-    printf("\n");
-}
 
 static void ProcessPacket(u_char *args, const struct pcap_pkthdr *header, const u_char *buff)
 {
     unsigned size = header->len;
 
-    struct Packet *pk = (struct Packet *)buff;
+    struct EthHeader *eth = (struct EthHeader *)buff;
     puts("============ Packet ==============");
-    ShowMac("Dst: ", pk->dest);
-    ShowMac("Src: ", pk->src);
-    printf("Type: %u\n", pk->type);
-    ShowPayload(buff+sizeof(struct Packet), size);
-    puts("==================================");
-}
+    puts("\n==== Ethernet Header ====");
 
+    ShowMac("Dst: ", eth->dest);
+    ShowMac("Src: ", eth->src);
+    printf("Type: %u\n", eth->type);
+    ShowPayload(buff+sizeof(struct EthHeader), size);
 
-void ShowDevices(pcap_if_t *alldevsp)
-{
-	pcap_if_t *device;
-	unsigned i = 0;
+    puts("=========================");
+    puts("==== IP Header ====");
 
-	for(device = alldevsp; device != NULL; device = device->next) {
-        printf("%d. %s - %s\n", i, device->name, device->description);
-        i++;
-    }
+    ShowIP(buff+sizeof(struct EthHeader));
+
+    puts("===================");
+    puts("\n==================================");
 }
 
 void SniffDevice(unsigned dev_number, pcap_if_t *alldevsp)
@@ -97,6 +69,7 @@ void SniffDevice(unsigned dev_number, pcap_if_t *alldevsp)
 		}
         i++;
     }
+    struct iphdr p;
 }
 
 
