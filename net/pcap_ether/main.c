@@ -31,24 +31,19 @@ pcap_t *handle;
 
 static void ProcessPacket(u_char *args, const struct pcap_pkthdr *header, const u_char *buff)
 {
+    bool isUdp;
     unsigned size = header->len;
+    unsigned iplen;
+    struct QuasiUdpHeader qhdr;
 
-    struct EthHeader *eth = (struct EthHeader *)buff;
-    puts("============ Packet ==============");
-    puts("\n==== Ethernet Header ====");
-
-    ShowMac("Dst: ", eth->dest);
-    ShowMac("Src: ", eth->src);
-    printf("Type: %u\n", eth->type);
-    ShowPayload(buff+sizeof(struct EthHeader), size);
-
-    puts("=========================");
-    puts("==== IP Header ====");
-
-    ShowIP(buff+sizeof(struct EthHeader));
-
-    puts("===================");
-    puts("\n==================================");
+    isUdp = getUDP(buff);
+    if (isUdp) {
+        puts("============ Packet ==============");
+        ShowMacHdr(buff, size);
+        iplen = ShowIPHdr(buff, &qhdr);
+        ShowUDPHdr(buff, iplen, &qhdr);
+        puts("==================================");
+    }
 }
 
 void SniffDevice(unsigned dev_number, pcap_if_t *alldevsp)

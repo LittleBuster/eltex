@@ -1,0 +1,3 @@
+/home/sergey/github/eltex/net/build-pcap_ether-Desktop-По умолчанию/CMakeFiles/rebuild_cache.dir
+/home/sergey/github/eltex/net/build-pcap_ether-Desktop-По умолчанию/CMakeFiles/edit_cache.dir
+/home/sergey/github/eltex/net/build-pcap_ether-Desktop-По умолчанию/CMakeFiles/sniffer.dir

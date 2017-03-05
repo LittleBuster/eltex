@@ -12,15 +12,20 @@
 #define PRINT_H_
 
 #include <pcap.h>
+#include <stdbool.h>
 
+#include "headers.h"
 
-void ShowMac(const char *text, const unsigned char *mac);
-
-void ShowPayload(const unsigned char *data, unsigned size);
 
 void ShowDevices(pcap_if_t *alldevsp);
 
-void ShowIP(const unsigned char *buff);
+bool getUDP(const unsigned char *buff);
+
+unsigned ShowIPHdr(const unsigned char *buff, struct QuasiUdpHeader *hdr);
+
+void ShowMacHdr(const unsigned char *buff, unsigned size);
+
+void ShowUDPHdr(const unsigned char *buff, unsigned size, const struct QuasiUdpHeader *hdr);
 
 
 #endif

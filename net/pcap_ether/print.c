@@ -21,7 +21,7 @@
 #include <string.h>
 
 
-void ShowMac(const char *text, const unsigned char *mac)
+static void ShowMac(const char *text, const unsigned char *mac)
 {
     printf("%s", text);
     for (unsigned char i = 0; i < 7; i++) {
@@ -32,7 +32,7 @@ void ShowMac(const char *text, const unsigned char *mac)
     printf("\n");
 }
 
-void ShowPayload(const unsigned char *data, unsigned size)
+static void ShowPayload(const unsigned char *data, unsigned size)
 {
     unsigned sz = size - sizeof(struct EthHeader);
 
@@ -54,10 +54,20 @@ void ShowDevices(pcap_if_t *alldevsp)
     }
 }
 
-void ShowIP(const unsigned char *buff)
+void ShowMacHdr(const unsigned char *buff, unsigned size)
+{
+    struct EthHeader *eth = (struct EthHeader *)buff;
+
+    ShowMac("Dst MAC: ", eth->dest);
+    ShowMac("Src MAC: ", eth->src);
+    printf("Type: %u\n", eth->type);
+    ShowPayload(buff, size);
+}
+
+unsigned ShowIPHdr(const unsigned char *buff, struct QuasiUdpHeader *hdr)
 {
     struct sockaddr_in source, dest;
-    struct IpHeader *iph = (struct IpHeader *)buff;
+    struct IpHeader *iph = (struct IpHeader *)(buff + sizeof(struct EthHeader));
 
     memset(&source, 0, sizeof(source));
     memset(&dest, 0, sizeof(dest));
@@ -65,6 +75,51 @@ void ShowIP(const unsigned char *buff)
     source.sin_addr.s_addr = iph->source;
     dest.sin_addr.s_addr = iph->destination;
 
-    printf("Source IP: %s\n" , inet_ntoa(source.sin_addr));
-    printf("Destination IP: %s\n" , inet_ntoa(dest.sin_addr));
+    printf("Dst IP: %s\n" , inet_ntoa(dest.sin_addr));
+    printf("Src IP: %s\n" , inet_ntoa(source.sin_addr));
+    switch (iph->protocol) {
+        case 1: {
+            puts("Protocol: ICMP");
+            break;
+        }
+        case 4: {
+            puts("Protocol: IP");
+            break;
+        }
+        case 6: {
+            puts("Protocol: TCP");
+            break;
+        }
+        case 17: {
+            puts("Protocol: UDP");
+            break;
+        }
+    }
+
+    hdr->source = iph->source;
+    hdr->destination = iph->destination;
+    hdr->udp_len = 8;
+    hdr->protocol = 17;
+    hdr->reserv = 0;
+
+    return iph->header_length;
+}
+
+bool getUDP(const unsigned char *buff)
+{
+    struct IpHeader *iph = (struct IpHeader *)(buff + sizeof(struct EthHeader));
+
+    if (iph->protocol == 17) {
+        return true;
+    }
+    return false;
+}
+
+void ShowUDPHdr(const unsigned char *buff, unsigned size, const struct QuasiUdpHeader *hdr)
+{
+    struct UdpHeader *udh = (struct UdpHeader *)(buff + sizeof(struct EthHeader) + size);
+
+    printf("Src Port: %u\n", udh->source_port);
+    printf("Dst Port: %u\n", udh->destination_port);
+    printf("Checksum: %u\n", udh->checksum);
 }

@@ -40,4 +40,20 @@ struct IpHeader {
 } __attribute__((packed));
 
 
+struct UdpHeader {
+    uint16_t source_port;
+    uint16_t destination_port;
+    uint16_t len;
+    uint16_t checksum;
+} __attribute__((packed));
+
+struct QuasiUdpHeader {
+    uint32_t source;
+    uint32_t destination;
+    uint8_t reserv;
+    uint8_t protocol;
+    uint16_t udp_len;
+} __attribute__((packed));
+
+
 #endif
