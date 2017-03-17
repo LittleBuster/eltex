@@ -8,14 +8,14 @@
 // as published by the Free Software Foundation; either version 3
 // of the Licence, or (at your option) any later version.
 
-#include<stdio.h>
-#include<string.h>
-#include<sys/socket.h>
-#include<errno.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <errno.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include<netinet/udp.h>
-#include<netinet/ip.h>
+#include <netinet/udp.h>
+#include <netinet/ip.h>
 
 #include "headers.h"
 
@@ -26,13 +26,13 @@ static unsigned short Checksum(unsigned short *ptr,int nbytes)
     unsigned short oddbyte;
     register short answer;
 
-    sum=0;
-    while(nbytes>1) {
-        sum+=*ptr++;
-        nbytes-=2;
+    sum = 0;
+    while(nbytes > 1) {
+        sum += *ptr++;
+        nbytes -= 2;
     }
-    if(nbytes==1) {
-        oddbyte=0;
+    if(nbytes == 1) {
+        oddbyte = 0;
         *((u_char*)&oddbyte)=*(u_char*)ptr;
         sum+=oddbyte;
     }
@@ -60,11 +60,11 @@ int main(void)
     struct udphdr *udph = (struct udphdr *) (datagram + sizeof (struct ip));
 
     data = datagram + sizeof(struct iphdr) + sizeof(struct udphdr);
-    strcpy(data , "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    strcpy(source_ip , "192.168.1.2");
+    strcpy(data , "MYMSG11111X");
+    strcpy(source_ip , "127.0.0.1");
 
     sin.sin_family = AF_INET;
-    sin.sin_port = htons(5000);
+    sin.sin_port = htons(5001);
     sin.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     iph->ihl = 5;
@@ -80,8 +80,8 @@ int main(void)
     iph->daddr = sin.sin_addr.s_addr;
     iph->check = Checksum((unsigned short *) datagram, iph->tot_len);
 
-    udph->source = htons (6666);
-    udph->dest = htons (8622);
+    udph->source = htons (5001);
+    udph->dest = htons (5001);
     udph->len = htons(8 + strlen(data));
     udph->check = 0;
 
@@ -102,7 +102,7 @@ int main(void)
     if (sendto (s, datagram, iph->tot_len ,  0, (struct sockaddr *) &sin, sizeof (sin)) < 0) {
          puts("Fail sending");
     } else {
-        printf ("Packet Send. Length : %d \n" , iph->tot_len);
+        printf ("Packet sended. Length : %d \n" , iph->tot_len);
     }
     return 0;
 }
